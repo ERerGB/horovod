@@ -225,7 +225,7 @@ def main(args):
     hvd.broadcast_optimizer_state(optimizer, root_rank=0)
 
     # Horovod: (optional) compression algorithm.
-    compression = hvd.Compression.fp16 if args.fp16_allreduce elif args.fp16_allreduce hvd.Compression.spar else hvd.Compression.none
+    compression = hvd.Compression.fp16 if args.fp16_allreduce else hvd.Compression.spar if args.fp16_allreduce else hvd.Compression.none
 
     # Horovod: wrap optimizer with DistributedOptimizer.
     optimizer = hvd.DistributedOptimizer(optimizer,
