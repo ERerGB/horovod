@@ -72,9 +72,9 @@ class SparCompressor(Compressor):
         element_type = tensor.dtype
         """Pseudo-random number generator."""
         random_seed = 19
-        torch.manual_seed(random_seed)
+        generator = torch.generator().manual_seed(random_seed)
         """Form 30% selected the indices(mask)."""
-        rand = torch.rand(tensor.shape, device=device_number, dtype=element_type)
+        rand = torch.rand(tensor.shape, device=device_number, dtype=element_type,generator=generator)
         threshold = 0.3
         bool_mask = rand < torch.Tensor(threshold, device=device_number, dtype=element_type)
         """New tensor with inherit values."""
