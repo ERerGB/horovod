@@ -63,6 +63,33 @@ class FP16Compressor(Compressor):
             tensor_decompressed = tensor.type(dtype)
         return tensor_decompressed
 
+class SparCompressor(Compressor):
+    """Compress only 30% numbers of gradients."""
+    @staticmethod
+    def compress(tensor):
+        """Copy the device number and element type of input tensor."""
+        device_number = tensor.device
+        element_type = tensor.dtype
+        """Pseudo-random number generator."""
+        random_seed = 19
+        torch.manual_seed(random_seed)
+        """Form 30% selected the indices(mask)."""
+        rand = torch.rand(tensor.shape, device=device_number, dtype=element_type)
+        threshold = 0.3
+        bool_mask = rand < torch.Tensor(threshold, device=device_number, dtype=element_type)
+        """New tensor with inherit values."""
+        compressed_tensor = torch.masked_select(tensor, bool_mask)
+        """ctx for info in original shape and select indcies."""
+        # ctx = bool_mask
+        return compressed_tensor, bool_mask
+    
+    @staticmethod
+    def decompress(tensor, ctx):
+        """decompress tensor to input shape."""
+        mask = ctx.view(-1)
+        decompressed_tensor = torch.zeros_like(ctx).long()
+        decompressed_tensor.view(-1)[mask] = tensor
+        return decompressed_tensor
 
 class Compression(object):
     """Optional gradient compression algorithm used during allreduce."""
@@ -72,3 +99,6 @@ class Compression(object):
 
     """Compress all floating point gradients to 16-bit."""
     fp16 = FP16Compressor
+    
+    """Compress only 30% numbers of gradients."""
+    spar = SparCompressor

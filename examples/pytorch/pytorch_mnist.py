@@ -33,6 +33,8 @@ parser.add_argument('--log-interval', type=int, default=10, metavar='N',
                     help='how many batches to wait before logging training status')
 parser.add_argument('--fp16-allreduce', action='store_true', default=False,
                     help='use fp16 compression during allreduce')
+parser.add_argument('--spar-allreduce', action='store_true', default=False,
+                    help='use sparsification compression during allreduce')
 parser.add_argument('--use-mixed-precision', action='store_true', default=False,
                     help='use mixed precision for training')
 parser.add_argument('--use-adasum', action='store_true', default=False,
@@ -223,7 +225,7 @@ def main(args):
     hvd.broadcast_optimizer_state(optimizer, root_rank=0)
 
     # Horovod: (optional) compression algorithm.
-    compression = hvd.Compression.fp16 if args.fp16_allreduce else hvd.Compression.none
+    compression = hvd.Compression.fp16 if args.fp16_allreduce elif args.fp16_allreduce hvd.Compression.spar else hvd.Compression.none
 
     # Horovod: wrap optimizer with DistributedOptimizer.
     optimizer = hvd.DistributedOptimizer(optimizer,
