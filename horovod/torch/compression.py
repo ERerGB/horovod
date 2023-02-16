@@ -78,18 +78,19 @@ class SparCompressor(Compressor):
         threshold = 0.3
         bool_mask = rand < torch.Tensor(threshold, device=device_number, dtype=element_type)
         """New tensor with inherit values."""
-        compressed_tensor = torch.masked_select(tensor, bool_mask)
+        tensor_compressed = torch.masked_select(tensor, bool_mask)
         """ctx for info in original shape and select indcies."""
         # ctx = bool_mask
-        return compressed_tensor, bool_mask
+        return tensor_compressed, bool_mask
     
     @staticmethod
     def decompress(tensor, ctx):
         """decompress tensor to input shape."""
+
         mask = ctx.view(-1)
-        decompressed_tensor = torch.zeros_like(ctx).long()
-        decompressed_tensor.view(-1)[mask] = tensor
-        return decompressed_tensor
+        tensor_decompressed = torch.zeros_like(ctx).type(tensor.dtype).to(tensor.device)
+        tensor_decompressed.view(-1)[mask] = tensor
+        return tensor_decompressed
 
 class Compression(object):
     """Optional gradient compression algorithm used during allreduce."""
